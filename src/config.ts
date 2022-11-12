@@ -1,4 +1,4 @@
-export default {
+export const config: any = {
   levels: {
     info: {
       color: "#3AFF00", //Bright Green

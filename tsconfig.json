@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES6",
     "module": "commonjs",
     "declaration": true,
     "outDir": "./lib",
     "strict": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
+  "exclude": ["node_modules", "**/__tests__/*"],
+  "extends": "@tsconfig/node16/tsconfig.json"
 }

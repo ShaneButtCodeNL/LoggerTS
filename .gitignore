@@ -105,3 +105,5 @@ dist
 
 #compiled
 /lib
+
+/src/testlocal.ts
