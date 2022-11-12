@@ -2,9 +2,12 @@
   "name": "loggerts",
   "version": "0.0.1",
   "description": "Simple logger tools",
-  "main": "index.js",
+  "main": "lib/LoggerTS.js",
+  "types": "lib/LoggerTS.d.ts",
   "scripts": {
     "test": "jest --config jestconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
     "build": "tsc"
   },
   "repository": {
@@ -25,5 +28,9 @@
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "dependencies": {
+    "chalk": "^5.1.2",
+    "moment": "^2.29.4"
+  }
 }
