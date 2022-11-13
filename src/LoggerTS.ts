@@ -8,7 +8,7 @@ import * as readline from "readline";
 /**
  *
  * @param options
- * OBJECT {level, message, error}
+ * OBJECT {level, message, error, logDir}
  */
 export const log = (options: any) => {
   const levelName: string = getLevelName(options.level);
@@ -17,7 +17,7 @@ export const log = (options: any) => {
 
   writeToConsole(levelName, message, error);
   if (config.levels[levelName].writeToFile) {
-    writeToFile(levelName, message);
+    writeToFile(levelName, error ? error.message : message, options.logDir);
   }
 };
 
@@ -99,15 +99,14 @@ const writeToFile = (
 };
 
 /**
- * Read logs
- * @param logDir
- * @param fileName
- * @returns Promise
+ *
+ * @param options
+ * { logDir:string="./logs" , fileName:string }
+ * @returns
  */
-export const readLogAsync = async (
-  logDir: string = "./logs",
-  fileName: string | null = null
-) => {
+export const readLogAsync = async (options: any) => {
+  const logDir = options.logDir || "./logs";
+  const fileName = options.fileName;
   return new Promise<any>((res, rej) => {
     const file = path.join(
       logDir,
@@ -141,4 +140,80 @@ const getFormatedDate = () => dayjs(Date.now()).format("YYYY/MM/DD");
  */
 const getLevelName = (levelName: string) => {
   return levelName && config.levels[levelName] ? levelName : "info";
+};
+
+//************************************************/
+//                                                /
+//             Helper functions                   /
+//                                                /
+//************************************************/
+
+/**
+ * Logs a message as a INFORMATION log
+ * @param {string} message
+ */
+export const infoLog = (message: string, logDir?: string) => {
+  log({ level: "info", message: message, logDir });
+};
+
+/**
+ * Logs a message as a DEBUG log
+ * @param {string} message
+ */
+export const debugLog = (message: string, logDir?: string) => {
+  log({ level: "debug", message: message, logDir });
+};
+
+/**
+ * Logs a message as a SYSTEM log
+ * @param {string} message
+ */
+export const systemLog = (message: string, logDir?: string) => {
+  log({ level: "system", message: message, logDir });
+};
+
+/**
+ * Logs a message as a DATABASE log
+ * @param {string} message
+ */
+export const databaseLog = (message: string, logDir?: string) => {
+  log({ level: "database", message: message, logDir });
+};
+
+/**
+ * Logs a message as a EVENT log
+ * @param {string} message
+ */
+export const eventLog = (message: string, logDir?: string) => {
+  log({ level: "event", message: message, logDir });
+};
+
+/**
+ * Logs a message as a WARNING log
+ * @param {string} message
+ */
+export const warnLog = (message: string, logDir?: string) => {
+  log({ level: "warn", message: message, logDir });
+};
+
+/**
+ * Logs a message as a ERROR log
+ * @param {string|Error} message
+ */
+export const errorLog = (message: string | Error, logDir?: string) => {
+  console.log(typeof message, "error");
+  if (typeof message === "string")
+    log({ level: "error", message: message, logDir });
+  else log({ level: "error", error: message, logDir });
+};
+
+/**
+ * Logs a message as a FATAL log
+ * @param {string|Error} message
+ */
+export const fatalLog = (message: string | Error, logDir?: string) => {
+  if (typeof message === "string")
+    log({ level: "fatal", message: message, logDir });
+  else
+    log({ level: "fatal", message: message.message, error: message, logDir });
 };
