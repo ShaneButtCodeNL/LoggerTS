@@ -66,14 +66,73 @@ const writeToConsole = (
     ? `${chalkFunction(`${error.message}\n${error.stack}`)}`
     : message;
 
-  const header = `[${levelName.toUpperCase()}] [${dayjs(Date.now()).format(
-    "YYYY/MM/DD"
-  )}]`;
+  const header = `[${levelName.toUpperCase()}] [${getFormatedDate()}]`;
 
   console.log(chalkFunction(`${header} : ${message}`));
 };
 
-const writeToFile = (levelName: string, message: string) => {};
+/**
+ * Write a formated message to a file.
+ * @param levelName
+ * @param message
+ */
+const writeToFile = (
+  levelName: string,
+  message: string,
+  logDir: string = "./logs"
+) => {
+  const data = {
+    level: levelName.toUpperCase(),
+    message,
+    timestamp: getFormatedDate(),
+  };
+  if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+  const options: fs.WriteFileOptions = {
+    encoding: "utf8",
+    mode: 438,
+  };
+  const fileName = `${logDir}/${levelName}-${data.timestamp.replaceAll(
+    "/",
+    "-"
+  )}.log`;
+  fs.appendFileSync(fileName, JSON.stringify(data) + "\r\n", options);
+};
+
+/**
+ * Read logs
+ * @param logDir
+ * @param fileName
+ * @returns Promise
+ */
+export const readLogAsync = async (
+  logDir: string = "./logs",
+  fileName: string | null = null
+) => {
+  return new Promise<any>((res, rej) => {
+    const file = path.join(
+      logDir,
+      fileName?.includes(".") ? fileName : fileName + ".log"
+    );
+    const lineReader = readline.createInterface(fs.createReadStream(file));
+    const logs: {}[] = [];
+    lineReader.on("line", (line) => logs.push(JSON.parse(line)));
+    lineReader.on("close", () => {
+      console.log(
+        chalk.yellow(`${fileName?.toUpperCase()} log has been accessed.`)
+      );
+      console.table(logs);
+      res(logs);
+    });
+    lineReader.on("error", (e) => rej(e));
+  });
+};
+
+/**
+ * Get a timestamp in the form YYYY/MM/DD
+ * @returns
+ * The date in YYYY/MM/DD format
+ */
+const getFormatedDate = () => dayjs(Date.now()).format("YYYY/MM/DD");
 
 /**
  *
