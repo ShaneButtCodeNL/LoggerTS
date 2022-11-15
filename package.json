@@ -1,6 +1,6 @@
 {
   "name": "loggerts",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Simple logger tools",
   "main": "lib/LoggerTS.js",
   "types": "lib/LoggerTS.d.ts",

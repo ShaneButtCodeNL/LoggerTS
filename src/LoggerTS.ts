@@ -6,6 +6,17 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Level, LevelData } from "./Level";
 
+export enum LogTypes {
+  INFO = "info",
+  WARNING = "warn",
+  DEBUG = "debug",
+  SYSTEM = "system",
+  DATABASE = "database",
+  ERROR = "error",
+  FATAL = "fatal",
+  EVENT = "event",
+}
+
 /**
  *  {
  *    levels:{
@@ -173,6 +184,7 @@ const getConfig = () => {
  * Adds a custom log configuration.
  * @param options
  * { level:string, color?:string|Array[number], writeToFile:boolean }
+ * @return Function to call log
  */
 export const addConfig = (options: any) => {
   if (
