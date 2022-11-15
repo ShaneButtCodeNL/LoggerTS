@@ -187,7 +187,8 @@ export const addConfig = (options: any) => {
       writeToFile: options.writeToFile === true ? true : false,
     };
     customConfig.levels[levelName] = level;
-    //console.log(getConfig());
+    return (message: string, logDir?: string | undefined) =>
+      log({ level: levelName, message, logDir: logDir });
   } else
     throw new Error(
       'Options must be defined and have a non zero length string for key value "level"'
