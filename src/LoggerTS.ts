@@ -4,9 +4,28 @@ import chalk from "chalk";
 const dayjs = require("dayjs");
 import * as fs from "fs";
 import * as readline from "readline";
+import { Level, LevelData } from "./Level";
 
 /**
- *
+ *  {
+ *    levels:{
+ *      levelName:string:{
+ *        color:val,
+ *        writeToFile:bool
+ *      },
+ *      levelName2:string:{
+ *        color:val,
+ *        writeToFile:bool
+ *      }
+ *    }
+ * }
+ */
+const customConfig: Record<string, Level> = {
+  levels: {} as Level,
+};
+
+/**
+ * Make a log using the configurations
  * @param options
  * OBJECT {level, message, error, logDir}
  */
@@ -16,7 +35,7 @@ export const log = (options: any) => {
   const error = options.error ?? null;
 
   writeToConsole(levelName, message, error);
-  if (config.levels[levelName].writeToFile) {
+  if (getConfig().levels[levelName].writeToFile) {
     writeToFile(levelName, error ? error.message : message, options.logDir);
   }
 };
@@ -32,7 +51,7 @@ const writeToConsole = (
   message: string,
   error: Error | null = null
 ) => {
-  const level = config.levels[levelName] || null;
+  const level = getConfig().levels[levelName] || null;
   let chalkFunction: any;
   //Todo update
   if (!level) throw new Error(`Not a valid Level`);
@@ -139,7 +158,40 @@ const getFormatedDate = () => dayjs(Date.now()).format("YYYY/MM/DD");
  * @returns The Level name if it exists else return "info" as default
  */
 const getLevelName = (levelName: string) => {
-  return levelName && config.levels[levelName] ? levelName : "info";
+  return levelName && getConfig().levels[levelName] ? levelName : "info";
+};
+
+/**
+ * Combines the base configuration file with any custom configurations user has made
+ * @returns The configuration
+ */
+const getConfig = () => {
+  return { levels: Object.assign({}, config.levels, customConfig.levels) };
+};
+
+/**
+ * Adds a custom log configuration.
+ * @param options
+ * { level:string, color?:string|Array[number], writeToFile:boolean }
+ */
+export const addConfig = (options: any) => {
+  if (
+    options.level &&
+    typeof options.level === "string" &&
+    options.level.length > 0
+  ) {
+    //TODO ERROR Checking
+    const levelName = options.level as string;
+    const level: LevelData = {
+      color: options.color ? options.color : "white",
+      writeToFile: options.writeToFile === true ? true : false,
+    };
+    customConfig.levels[levelName] = level;
+    //console.log(getConfig());
+  } else
+    throw new Error(
+      'Options must be defined and have a non zero length string for key value "level"'
+    );
 };
 
 //************************************************/
