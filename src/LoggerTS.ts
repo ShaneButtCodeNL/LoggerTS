@@ -38,16 +38,20 @@ const customConfig: Record<string, Level> = {
 /**
  * Make a log using the configurations
  * @param options
- * OBJECT {level, message, error, logDir}
+ * OBJECT {level, message, JSON, error, logDir}
  */
 export const log = (options: any) => {
   const levelName: string = getLevelName(options.level);
   let message = options.message ?? "";
   const error = options.error ?? null;
 
-  writeToConsole(levelName, message, error);
+  if (options.JSON) {
+    writeToConsoleJSON(levelName, options.JSON, error);
+  } else writeToConsole(levelName, message, error);
   if (getConfig().levels[levelName].writeToFile) {
-    writeToFile(levelName, error ? error.message : message, options.logDir);
+    if (options.JSON) writeToFileJSON(levelName, options.JSON, options.logDir);
+    else
+      writeToFile(levelName, error ? error.message : message, options.logDir);
   }
 };
 
@@ -102,6 +106,20 @@ const writeToConsole = (
 };
 
 /**
+ * Writes a JSON element to the console
+ * @param levelName
+ * @param JSONObject
+ * @param error
+ */
+const writeToConsoleJSON = (
+  levelName: string,
+  JSONObject: JSON,
+  error: Error
+) => {
+  writeToConsole(levelName, JSON.stringify(JSONObject), error);
+};
+
+/**
  * Write a formated message to a file.
  * @param levelName
  * @param message
@@ -126,6 +144,20 @@ const writeToFile = (
     "-"
   )}.log`;
   fs.appendFileSync(fileName, JSON.stringify(data) + "\r\n", options);
+};
+
+/**
+ * Writes a JSON to a file
+ * @param levelName
+ * @param JSONObject
+ * @param logDir
+ */
+const writeToFileJSON = (
+  levelName: string,
+  JSONObject: JSON,
+  logDir: string = "./logs"
+) => {
+  writeToFile(levelName, JSON.stringify(JSONObject), logDir);
 };
 
 /**
