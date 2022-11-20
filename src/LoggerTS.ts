@@ -231,8 +231,18 @@ export const addConfig = (options: any) => {
       writeToFile: options.writeToFile === true ? true : false,
     };
     customConfig.levels[levelName] = level;
-    return (message: string, logDir?: string | undefined) =>
-      log({ level: levelName, message, logDir: logDir });
+    /**
+     * A log function for a custom configuration
+     * @param options
+     * OBJECT {level, message, JSON, error, logDir}
+     * @returns
+     */
+    const logFunction = (options: {
+      message?: string | undefined;
+      JSON?: any;
+      logDir?: string | undefined;
+    }) => log({ level: levelName, ...options });
+    return logFunction;
   } else
     throw new Error(
       'Options must be defined and have a non zero length string for key value "level"'
