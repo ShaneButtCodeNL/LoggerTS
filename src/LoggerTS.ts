@@ -259,68 +259,103 @@ export const addConfig = (options: any) => {
  * Logs a message as a INFORMATION log
  * @param {string} message
  */
-export const infoLog = (message: string, logDir?: string) => {
-  log({ level: "info", message: message, logDir });
+export const infoLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "info", ...options });
 };
 
 /**
  * Logs a message as a DEBUG log
  * @param {string} message
  */
-export const debugLog = (message: string, logDir?: string) => {
-  log({ level: "debug", message: message, logDir });
+export const debugLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "debug", ...options });
 };
 
 /**
  * Logs a message as a SYSTEM log
  * @param {string} message
  */
-export const systemLog = (message: string, logDir?: string) => {
-  log({ level: "system", message: message, logDir });
+export const systemLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "system", ...options });
 };
 
 /**
  * Logs a message as a DATABASE log
  * @param {string} message
  */
-export const databaseLog = (message: string, logDir?: string) => {
-  log({ level: "database", message: message, logDir });
+export const databaseLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "database", ...options });
 };
 
 /**
  * Logs a message as a EVENT log
  * @param {string} message
  */
-export const eventLog = (message: string, logDir?: string) => {
-  log({ level: "event", message: message, logDir });
+export const eventLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "event", ...options });
 };
 
 /**
  * Logs a message as a WARNING log
  * @param {string} message
  */
-export const warnLog = (message: string, logDir?: string) => {
-  log({ level: "warn", message: message, logDir });
+export const warnLog = (options: {
+  message?: string;
+  JSON?: any;
+  logDir?: string;
+}) => {
+  log({ level: "warn", ...options });
 };
 
 /**
  * Logs a message as a ERROR log
  * @param {string|Error} message
  */
-export const errorLog = (message: string | Error, logDir?: string) => {
-  console.log(typeof message, "error");
-  if (typeof message === "string")
-    log({ level: "error", message: message, logDir });
-  else log({ level: "error", error: message, logDir });
+export const errorLog = (options: {
+  message: string | Error;
+  logDir?: string | undefined;
+}) => {
+  console.log(typeof options.message, "error");
+  if (typeof options.message === "string")
+    log({ level: "error", message: options.message, logDir: options.logDir });
+  else log({ level: "error", error: options.message, logDir: options.logDir });
 };
 
 /**
  * Logs a message as a FATAL log
  * @param {string|Error} message
  */
-export const fatalLog = (message: string | Error, logDir?: string) => {
-  if (typeof message === "string")
-    log({ level: "fatal", message: message, logDir });
+export const fatalLog = (options: {
+  message: string | Error;
+  logDir?: string | undefined;
+}) => {
+  if (typeof options.message === "string")
+    log({ level: "fatal", message: options.message, logDir: options.logDir });
   else
-    log({ level: "fatal", message: message.message, error: message, logDir });
+    log({
+      level: "fatal",
+      message: options.message.message,
+      error: options.message,
+      logDir: options.logDir,
+    });
 };
