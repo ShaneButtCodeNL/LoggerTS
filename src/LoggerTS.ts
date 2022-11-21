@@ -166,7 +166,10 @@ const writeToFileJSON = (
  * { logDir:string="./logs" , fileName:string }
  * @returns
  */
-export const readLogAsync = async (options: any) => {
+export const readLogAsync = async (options: {
+  logDir?: string | undefined;
+  fileName: string;
+}) => {
   const logDir = options.logDir || "./logs";
   const fileName = options.fileName;
   return new Promise<any>((res, rej) => {
@@ -174,6 +177,7 @@ export const readLogAsync = async (options: any) => {
       logDir,
       fileName?.includes(".") ? fileName : fileName + ".log"
     );
+    console.log("-----file", file);
     const lineReader = readline.createInterface(fs.createReadStream(file));
     const logs: {}[] = [];
     lineReader.on("line", (line) => logs.push(JSON.parse(line)));
@@ -218,7 +222,11 @@ const getConfig = () => {
  * { level:string, color?:string|Array[number], writeToFile:boolean }
  * @return Function to call log
  */
-export const addConfig = (options: any) => {
+export const addConfig = (options: {
+  level: string;
+  color?: string | Array<number>;
+  writeToFile?: boolean;
+}) => {
   if (
     options.level &&
     typeof options.level === "string" &&
@@ -247,6 +255,19 @@ export const addConfig = (options: any) => {
     throw new Error(
       'Options must be defined and have a non zero length string for key value "level"'
     );
+};
+
+/**
+ * Removes a custom Log configuration
+ * @param level The custom level to be deleted
+ * @returns 1 if successfull 0 if fail
+ */
+export const removeConfig = (level: string) => {
+  if (customConfig.levels[level]) {
+    delete customConfig.levels[level];
+    return 1;
+  }
+  return 0;
 };
 
 //************************************************/

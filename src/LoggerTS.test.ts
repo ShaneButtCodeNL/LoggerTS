@@ -8,10 +8,13 @@ import {
   warnLog,
   errorLog,
   fatalLog,
+  addConfig,
+  removeConfig,
+  readLogAsync,
 } from "./LoggerTS";
 import { config } from "./config";
 const fs = require("fs");
-import { WriteFileOptions, appendFileSync, fstat } from "fs";
+import { WriteFileOptions } from "fs";
 import chalk from "chalk";
 
 let testNumber = 1;
@@ -55,6 +58,8 @@ const debugFileDataObject = {
   timestamp: date,
 };
 const debugChalkFunction = chalk.hex(config.levels.debug.color);
+
+// test(getTestName(""),()=>{})
 
 jest.mock("fs");
 
@@ -225,3 +230,102 @@ test(
     appendFileSyncSpy.mockClear();
   }
 );
+
+test(getTestName("All default log helper functions object default dir"), () => {
+  const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
+  const message = {
+    message: "test message",
+    message2: "test message 2",
+    ALLTHEWAY: 42069,
+  };
+  const options = { JSON: message };
+  debugLog(options); //1
+  infoLog(options); //2
+  systemLog(options); //3
+  databaseLog(options); //4
+  eventLog(options); //5
+  warnLog(options); //6
+  const count = 6;
+  expect(logSpy).toBeCalledTimes(count);
+  expect(appendFileSyncSpy).toBeCalledTimes(count);
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
+});
+
+test(
+  getTestName("Adding a custom configuration and updateing the config"),
+  () => {
+    const logSpy = jest.spyOn(console, "log");
+    const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
+    const c1 = addConfig({
+      level: "custom1",
+      color: [100, 100, 100],
+      writeToFile: false,
+    });
+    const c2 = addConfig({
+      level: "custom2",
+      color: "#123456",
+      writeToFile: false,
+    });
+    const c3 = addConfig({
+      level: "custom3",
+      color: "cyan",
+      writeToFile: true,
+    });
+    const dir = "testConfigLogs";
+    //Should return functions
+    expect(c1).toEqual(expect.any(Function));
+    expect(c2).toEqual(expect.any(Function));
+    expect(c3).toEqual(expect.any(Function));
+    c2({
+      message: "test 1",
+    });
+    //Logs but doesn't write to file
+    expect(logSpy).toHaveBeenCalled();
+    expect(appendFileSyncSpy).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+
+    c3({
+      message: "test 2",
+      logDir: dir,
+    });
+    //Should console.log and write to file
+    expect(logSpy).toHaveBeenCalled();
+    expect(appendFileSyncSpy).toHaveBeenCalled();
+    jest.clearAllMocks();
+
+    //Update config
+    addConfig({
+      level: "debug",
+      color: "#000000",
+      writeToFile: false,
+    });
+    debugLog({
+      message: "test 3",
+    });
+    const debugChalkFunctionNew = chalk.hex("#000000");
+    expect(logSpy).toBeCalledWith(
+      debugChalkFunctionNew(`[DEBUG] [${date}] : test 3`)
+    );
+    expect(appendFileSyncSpy).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+
+    //Delete config
+    const succ = removeConfig("debug");
+    debugLog({ message: "test 4" });
+    expect(succ).toEqual(1);
+    expect(logSpy).toBeCalledWith(
+      debugChalkFunction(`[DEBUG] [${date}] : test 4`)
+    );
+    expect(appendFileSyncSpy).toHaveBeenCalled();
+    jest.clearAllMocks();
+
+    c1({ message: "test 5" });
+    expect(logSpy).toHaveBeenCalled();
+    expect(appendFileSyncSpy).not.toHaveBeenCalled();
+    jest.clearAllMocks();
+  }
+);
+
+//TODO readLog and Error
