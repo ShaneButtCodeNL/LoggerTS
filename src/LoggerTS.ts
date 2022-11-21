@@ -335,7 +335,6 @@ export const errorLog = (options: {
   message: string | Error;
   logDir?: string | undefined;
 }) => {
-  console.log(typeof options.message, "error");
   if (typeof options.message === "string")
     log({ level: "error", message: options.message, logDir: options.logDir });
   else log({ level: "error", error: options.message, logDir: options.logDir });
@@ -354,7 +353,6 @@ export const fatalLog = (options: {
   else
     log({
       level: "fatal",
-      message: options.message.message,
       error: options.message,
       logDir: options.logDir,
     });

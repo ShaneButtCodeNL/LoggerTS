@@ -1,6 +1,17 @@
-import { log, debugLog } from "./LoggerTS";
+import {
+  log,
+  debugLog,
+  infoLog,
+  systemLog,
+  databaseLog,
+  eventLog,
+  warnLog,
+  errorLog,
+  fatalLog,
+} from "./LoggerTS";
 import { config } from "./config";
-import { WriteFileOptions, appendFileSync } from "fs";
+const fs = require("fs");
+import { WriteFileOptions, appendFileSync, fstat } from "fs";
 import chalk from "chalk";
 
 let testNumber = 1;
@@ -49,48 +60,54 @@ jest.mock("fs");
 
 test(getTestName("debug log with string message, and no dir"), () => {
   const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
   debugLog({ message: DebugMessage });
   expect(logSpy).toBeCalledWith(
     debugChalkFunction(`[DEBUG] [${date}] : ${DebugMessage}`)
   );
-  expect(appendFileSync).toBeCalledWith(
+  expect(appendFileSyncSpy).toBeCalledWith(
     fileName,
     JSON.stringify(debugFileDataMessage) + "\r\n",
     fileWriteOptions
   );
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
 });
 
 test(getTestName("debug log with string message, and dir"), () => {
   const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
   const dir = "tempLogDir";
   const tempFileName = `${dir}/debug-${dateDashes}.log`;
-
   debugLog({ message: DebugMessage, logDir: dir });
   expect(logSpy).toBeCalledWith(
     debugChalkFunction(`[DEBUG] [${date}] : ${DebugMessage}`)
   );
-  expect(appendFileSync).toHaveBeenCalled();
-  expect(appendFileSync).toBeCalledWith(
+  expect(appendFileSyncSpy).toBeCalledWith(
     tempFileName,
     JSON.stringify(debugFileDataMessage) + "\r\n",
     fileWriteOptions
   );
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
 });
 
 test(
   getTestName("debug log using the log function, string message, and no dir"),
   () => {
     const logSpy = jest.spyOn(console, "log");
+    const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
     log({ level: "debug", message: DebugMessage });
     expect(logSpy).toBeCalledWith(
       debugChalkFunction(`[DEBUG] [${date}] : ${DebugMessage}`)
     );
-    expect(appendFileSync).toHaveBeenCalled();
-    expect(appendFileSync).toBeCalledWith(
+    expect(appendFileSyncSpy).toBeCalledWith(
       fileName,
       JSON.stringify(debugFileDataMessage) + "\r\n",
       fileWriteOptions
     );
+    logSpy.mockClear();
+    appendFileSyncSpy.mockClear();
   }
 );
 
@@ -98,49 +115,55 @@ test(
   getTestName("debug log using the log function, string message, and a dir"),
   () => {
     const logSpy = jest.spyOn(console, "log");
+    const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
     const dir = "tempLogDir";
     const tempFileName = `${dir}/debug-${dateDashes}.log`;
     log({ level: "debug", message: DebugMessage, logDir: dir });
     expect(logSpy).toBeCalledWith(
       debugChalkFunction(`[DEBUG] [${date}] : ${DebugMessage}`)
     );
-    expect(appendFileSync).toHaveBeenCalled();
-    expect(appendFileSync).toBeCalledWith(
+    expect(appendFileSyncSpy).toBeCalledWith(
       tempFileName,
       JSON.stringify(debugFileDataMessage) + "\r\n",
       fileWriteOptions
     );
+    logSpy.mockClear();
+    appendFileSyncSpy.mockClear();
   }
 );
 
 test(getTestName("debug log with object, and no dir"), () => {
   const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
   debugLog({ JSON: DebugObject });
   expect(logSpy).toBeCalledWith(
     debugChalkFunction(`[DEBUG] [${date}] : ${JSON.stringify(DebugObject)}`)
   );
-  expect(appendFileSync).toBeCalledWith(
+  expect(appendFileSyncSpy).toBeCalledWith(
     fileName,
     JSON.stringify(debugFileDataObject) + "\r\n",
     fileWriteOptions
   );
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
 });
 
 test(getTestName("debug log with object, and dir"), () => {
   const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
   const dir = "tempLogDir";
   const tempFileName = `${dir}/debug-${dateDashes}.log`;
-
   debugLog({ JSON: DebugObject, logDir: dir });
   expect(logSpy).toBeCalledWith(
     debugChalkFunction(`[DEBUG] [${date}] : ${JSON.stringify(DebugObject)}`)
   );
-  expect(appendFileSync).toHaveBeenCalled();
-  expect(appendFileSync).toBeCalledWith(
+  expect(appendFileSyncSpy).toBeCalledWith(
     tempFileName,
     JSON.stringify(debugFileDataObject) + "\r\n",
     fileWriteOptions
   );
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
 });
 
 test(
@@ -148,30 +171,57 @@ test(
   () => {
     const logSpy = jest.spyOn(console, "log");
     log({ level: "debug", JSON: DebugObject });
+    const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
     expect(logSpy).toBeCalledWith(
       debugChalkFunction(`[DEBUG] [${date}] : ${JSON.stringify(DebugObject)}`)
     );
-    expect(appendFileSync).toHaveBeenCalled();
-    expect(appendFileSync).toBeCalledWith(
+    expect(appendFileSyncSpy).toBeCalledWith(
       fileName,
       JSON.stringify(debugFileDataObject) + "\r\n",
       fileWriteOptions
     );
+    logSpy.mockClear();
+    appendFileSyncSpy.mockClear();
   }
 );
 
 test(getTestName("debug log using the log function, object, and a dir"), () => {
   const logSpy = jest.spyOn(console, "log");
+  const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
   const dir = "tempLogDir";
   const tempFileName = `${dir}/debug-${dateDashes}.log`;
   log({ level: "debug", JSON: DebugObject, logDir: dir });
   expect(logSpy).toBeCalledWith(
     debugChalkFunction(`[DEBUG] [${date}] : ${JSON.stringify(DebugObject)}`)
   );
-  expect(appendFileSync).toHaveBeenCalled();
-  expect(appendFileSync).toBeCalledWith(
+  expect(appendFileSyncSpy).toBeCalledWith(
     tempFileName,
     JSON.stringify(debugFileDataObject) + "\r\n",
     fileWriteOptions
   );
+  logSpy.mockClear();
+  appendFileSyncSpy.mockClear();
 });
+
+test(
+  getTestName("All default log helper functions string message default dir"),
+  () => {
+    const logSpy = jest.spyOn(console, "log");
+    const appendFileSyncSpy = jest.spyOn(fs, "appendFileSync");
+    const message = "test message";
+    const options = { message };
+    debugLog(options); //1
+    infoLog(options); //2
+    systemLog(options); //3
+    databaseLog(options); //4
+    eventLog(options); //5
+    warnLog(options); //6
+    errorLog(options); //7
+    fatalLog(options); //8
+    const count = 8;
+    expect(logSpy).toBeCalledTimes(count);
+    expect(appendFileSyncSpy).toBeCalledTimes(count);
+    logSpy.mockClear();
+    appendFileSyncSpy.mockClear();
+  }
+);
