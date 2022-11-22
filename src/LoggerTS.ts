@@ -66,12 +66,40 @@ const writeToConsole = (
   message: string,
   error: Error | null = null
 ) => {
+  const makeErrorArrayType = (position: number, typeOfValue: string) =>
+    new Error(
+      `An error has been detected in configuration for level [${chalk.red(
+        levelName.toUpperCase()
+      )}]. The value of color is set to an array which is for RGB values. The array should have a '${chalk.red(
+        "number"
+      )}' at position [ ${position} ], but we detected a '${chalk.red(
+        typeOfValue
+      )}' value. Please Enter a "number" value at position [ ${position} ].`
+    );
+  const makeErrorRangeValue = (position: number, value: number) =>
+    new Error(
+      `An error has been detected in configuration for level [${chalk.red(
+        levelName.toUpperCase()
+      )}]. The value of color is set to an array which is for RGB values. The array should be in the range [${chalk.red(
+        " 0 , 255 "
+      )}]. At position [ ${position} ] we detected a value of [ ${chalk.red(
+        value
+      )} ]. Please Enter a value at position [ ${position} ] that is greater or equal to 0 and less than or equal to 255.`
+    );
+  const hexRegex = /#[A-F0-9]{6}/;
   const level = getConfig().levels[levelName] || null;
   let chalkFunction: any;
-  //Todo update
   if (!level) throw new Error(`Not a valid Level`);
   //Hex
   if (level.color[0] === "#") {
+    if (!hexRegex.test(level.color))
+      throw new Error(
+        `An error has been detected in configuration for level [${chalk.red(
+          levelName.toUpperCase()
+        )}]. The value of color must be a hex value starting with "#". Must be in range [0,9] or A,B,C,D,E,F. We Found [ ${chalk.red(
+          level.color
+        )} ]. Please use a valid hex value.`
+      );
     chalkFunction = chalk.hex(level.color);
   } else if (Array.isArray(level.color)) {
     //Check if there are 3 values [red,green,blue]
@@ -88,7 +116,20 @@ const writeToConsole = (
         } ${Math.abs(level.color.length - 3)} values.`
       );
     }
-    //todo Check values are valid [int,int,int]
+    //Check for value types of RGB Array
+    if (typeof level.color[0] !== "number")
+      throw makeErrorArrayType(0, typeof level.color[0]);
+    if (typeof level.color[1] !== "number")
+      throw makeErrorArrayType(1, typeof level.color[1]);
+    if (typeof level.color[2] !== "number")
+      throw makeErrorArrayType(2, typeof level.color[2]);
+    //Check values are in range [0,255]
+    if (level.color[0] < 0 || level.color[0] > 255)
+      throw makeErrorRangeValue(0, level.color[0]);
+    if (level.color[1] < 0 || level.color[1] > 255)
+      throw makeErrorRangeValue(1, level.color[1]);
+    if (level.color[2] < 0 || level.color[2] > 255)
+      throw makeErrorRangeValue(2, level.color[2]);
     //All good
     chalkFunction = chalk.rgb(level.color[0], level.color[1], level.color[2]);
   } else {
@@ -177,7 +218,6 @@ export const readLogAsync = async (options: {
       logDir,
       fileName?.includes(".") ? fileName : fileName + ".log"
     );
-    console.log("-----file", file);
     const lineReader = readline.createInterface(fs.createReadStream(file));
     const logs: {}[] = [];
     lineReader.on("line", (line) => logs.push(JSON.parse(line)));
