@@ -6,6 +6,8 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Level, LevelData } from "./Level";
 
+const hexRegex = /#[A-F0-9]{6}/i;
+
 export enum LogTypes {
   INFO = "info",
   WARNING = "warn",
@@ -86,7 +88,6 @@ const writeToConsole = (
         value
       )} ]. Please Enter a value at position [ ${position} ] that is greater or equal to 0 and less than or equal to 255.`
     );
-  const hexRegex = /#[A-F0-9]{6}/;
   const level = getConfig().levels[levelName] || null;
   let chalkFunction: any;
   if (!level) throw new Error(`Not a valid Level`);
