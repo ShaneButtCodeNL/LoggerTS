@@ -12,10 +12,14 @@ import {
   removeConfig,
   readLogAsync,
 } from "./LoggerTS";
+import * as readline from "readline";
+import * as path from "path";
+
 import { config } from "./config";
 const fs = require("fs");
-import { WriteFileOptions } from "fs";
+import { mkdirSync, WriteFileOptions, createReadStream, existsSync } from "fs";
 import chalk from "chalk";
+import { PassThrough } from "stream";
 
 let testNumber = 1;
 const testNumberLength = 2;
@@ -69,7 +73,8 @@ const debugChalkFunction = chalk.hex(config.levels.debug.color);
 // test(getTestName(""),()=>{})
 
 jest.mock("fs");
-jest.dontMock("./LoggerTS");
+jest.mock("readline");
+//jest.dontMock("./LoggerTS");
 
 describe(getSuiteName("Test functions that log"), () => {
   it(getTestName("debug log with string message, and no dir"), () => {
@@ -235,7 +240,7 @@ describe(getSuiteName("Test helper functions"), () => {
       errorLog(options); //7
       fatalLog(options); //8
       const count = 8;
-      expect(logSpy).toBeCalledTimes(count);
+      expect(logSpy).toBeCalledTimes(2 * count);
       expect(appendFileSyncSpy).toBeCalledTimes(count);
       logSpy.mockClear();
       appendFileSyncSpy.mockClear();
@@ -257,7 +262,7 @@ describe(getSuiteName("Test helper functions"), () => {
     eventLog(options); //5
     warnLog(options); //6
     const count = 6;
-    expect(logSpy).toBeCalledTimes(count);
+    expect(logSpy).toBeCalledTimes(2 * count);
     expect(appendFileSyncSpy).toBeCalledTimes(count);
     logSpy.mockClear();
     appendFileSyncSpy.mockClear();
@@ -340,4 +345,50 @@ describe(getSuiteName("Test Custom Configurations"), () => {
     }
   );
 });
+
 //TODO readLog and Error
+describe(getSuiteName("Test Error states"), () => {
+  it(getTestName("Log should throw error if no args given"), () => {
+    expect(log).toThrow();
+  });
+
+  it(
+    getTestName(
+      "Given an config level that isn't defined should throw an error"
+    ),
+    () => {
+      const level = "ThisLevelDoesn'tExist";
+      expect(() => log({ level, message: "test" })).toThrow(
+        `Given Level: ${chalk.red(
+          level
+        )}, was not found in the configuration file. Please use a valid value or add this value to the configuration using " addConfig " function`
+      );
+    }
+  );
+
+  it(getTestName("addConfig with no options parameter must fail"), () => {
+    expect(addConfig).toThrow();
+  });
+
+  it(
+    getTestName(
+      "Given an array of less than 3 values for color in config should throw error"
+    ),
+    () => {
+      expect(() =>
+        addConfig({ level: "rgbwith2values", color: [100, 100] })
+      ).toThrow();
+    }
+  );
+
+  it(
+    getTestName(
+      "Given an array of more than 3 values for color in config should throw error"
+    ),
+    () => {
+      expect(() =>
+        addConfig({ level: "rgbwith4values", color: [100, 100, 100, 100] })
+      ).toThrow();
+    }
+  );
+});

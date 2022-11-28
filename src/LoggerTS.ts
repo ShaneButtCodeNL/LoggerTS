@@ -6,7 +6,72 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Level, LevelData } from "./Level";
 
-const hexRegex = /#[A-F0-9]{6}/i;
+// used to validate hex values
+// ex #000 #1af #1Af #000000 #123aCf all will be valid
+const hexRegex = /^#([a-f0-9]{6}|[a-f0-9]{3})/i;
+
+/**
+ *  Make an error for color defined by an array if 3 values not given like RGB
+ * @param levelName The level name
+ * @param color The array of RGB values
+ * @returns an error stating the array must have 3 values
+ */
+const makeErrorArrayLengthRGB = (levelName: string, color: Array<any>) =>
+  new Error(
+    `An error has been detected in configuration for level [${chalk.red(
+      levelName.toUpperCase()
+    )}]. The value of color is set to an array which is for RGB values. The array should have '${chalk.red(
+      "3"
+    )}' values, but we detected '${chalk.red(
+      "" + color.length
+    )}' values. Please ${color.length > 3 ? "remove" : "add"} ${Math.abs(
+      color.length - 3
+    )} values.`
+  );
+
+/**
+ * Makes an error to state that a value in the array is outside the range [0,255]
+ * @param position The position that is outside range
+ * @param value The value at said position
+ * @param levelName The level name in configuration
+ * @returns An Error
+ */
+const makeErrorRangeValue = (
+  position: number,
+  value: number,
+  levelName: string
+) =>
+  new Error(
+    `An error has been detected in configuration for level [${chalk.red(
+      levelName.toUpperCase()
+    )}]. The value of color is set to an array which is for RGB values. The array should be in the range [${chalk.red(
+      " 0 , 255 "
+    )}]. At position [ ${position} ] we detected a value of [ ${chalk.red(
+      value
+    )} ]. Please Enter a value at position [ ${position} ] that is greater or equal to 0 and less than or equal to 255.`
+  );
+
+/**
+ * Makes an error for when a non number value is found in RGB array
+ * @param position The Position
+ * @param typeOfValue The type of value found
+ * @param levelName The level name in the config
+ * @returns
+ */
+const makeErrorArrayType = (
+  position: number,
+  typeOfValue: string,
+  levelName: string
+) =>
+  new Error(
+    `An error has been detected in configuration for level [${chalk.red(
+      levelName.toUpperCase()
+    )}]. The value of color is set to an array which is for RGB values. The array should have a '${chalk.red(
+      "number"
+    )}' at position [ ${position} ], but we detected a '${chalk.red(
+      typeOfValue
+    )}' value. Please Enter a "number" value at position [ ${position} ].`
+  );
 
 export enum LogTypes {
   INFO = "info",
@@ -43,6 +108,7 @@ const customConfig: Record<string, Level> = {
  * OBJECT {level, message, JSON, error, logDir}
  */
 export const log = (options: any) => {
+  if (!options) throw new Error("Options must be given.");
   const levelName: string = getLevelName(options.level);
   let message = options.message ?? "";
   const error = options.error ?? null;
@@ -68,26 +134,6 @@ const writeToConsole = (
   message: string,
   error: Error | null = null
 ) => {
-  const makeErrorArrayType = (position: number, typeOfValue: string) =>
-    new Error(
-      `An error has been detected in configuration for level [${chalk.red(
-        levelName.toUpperCase()
-      )}]. The value of color is set to an array which is for RGB values. The array should have a '${chalk.red(
-        "number"
-      )}' at position [ ${position} ], but we detected a '${chalk.red(
-        typeOfValue
-      )}' value. Please Enter a "number" value at position [ ${position} ].`
-    );
-  const makeErrorRangeValue = (position: number, value: number) =>
-    new Error(
-      `An error has been detected in configuration for level [${chalk.red(
-        levelName.toUpperCase()
-      )}]. The value of color is set to an array which is for RGB values. The array should be in the range [${chalk.red(
-        " 0 , 255 "
-      )}]. At position [ ${position} ] we detected a value of [ ${chalk.red(
-        value
-      )} ]. Please Enter a value at position [ ${position} ] that is greater or equal to 0 and less than or equal to 255.`
-    );
   const level = getConfig().levels[levelName] || null;
   let chalkFunction: any;
   if (!level) throw new Error(`Not a valid Level`);
@@ -97,40 +143,32 @@ const writeToConsole = (
       throw new Error(
         `An error has been detected in configuration for level [${chalk.red(
           levelName.toUpperCase()
-        )}]. The value of color must be a hex value starting with "#". Must be in range [0,9] or A,B,C,D,E,F. We Found [ ${chalk.red(
+        )}]. The value of color must be a hex value starting with "#". Must be in range [0,9] or A,B,C,D,E,F. The value length must also be "3" or "6". We Found [ ${chalk.red(
           level.color
-        )} ]. Please use a valid hex value.`
+        )} ], Length: ${chalk.red(
+          level.color.length - 1
+        )}. Please use a valid hex value.`
       );
     chalkFunction = chalk.hex(level.color);
   } else if (Array.isArray(level.color)) {
     //Check if there are 3 values [red,green,blue]
     if (level.color.length !== 3) {
-      throw new Error(
-        `An error has been detected in configuration for level [${chalk.red(
-          levelName.toUpperCase()
-        )}]. The value of color is set to an array which is for RGB values. The array should have '${chalk.red(
-          "3"
-        )}' values, but we detected '${chalk.red(
-          "" + level.color.length
-        )}' values. Please ${
-          level.color.length > 3 ? "remove" : "add"
-        } ${Math.abs(level.color.length - 3)} values.`
-      );
+      throw makeErrorArrayLengthRGB(levelName, level.color);
     }
     //Check for value types of RGB Array
     if (typeof level.color[0] !== "number")
-      throw makeErrorArrayType(0, typeof level.color[0]);
+      throw makeErrorArrayType(0, typeof level.color[0], levelName);
     if (typeof level.color[1] !== "number")
-      throw makeErrorArrayType(1, typeof level.color[1]);
+      throw makeErrorArrayType(1, typeof level.color[1], levelName);
     if (typeof level.color[2] !== "number")
-      throw makeErrorArrayType(2, typeof level.color[2]);
+      throw makeErrorArrayType(2, typeof level.color[2], levelName);
     //Check values are in range [0,255]
     if (level.color[0] < 0 || level.color[0] > 255)
-      throw makeErrorRangeValue(0, level.color[0]);
+      throw makeErrorRangeValue(0, level.color[0], levelName);
     if (level.color[1] < 0 || level.color[1] > 255)
-      throw makeErrorRangeValue(1, level.color[1]);
+      throw makeErrorRangeValue(1, level.color[1], levelName);
     if (level.color[2] < 0 || level.color[2] > 255)
-      throw makeErrorRangeValue(2, level.color[2]);
+      throw makeErrorRangeValue(2, level.color[2], levelName);
     //All good
     chalkFunction = chalk.rgb(level.color[0], level.color[1], level.color[2]);
   } else {
@@ -186,6 +224,11 @@ const writeToFile = (
     "-"
   )}.log`;
   fs.appendFileSync(fileName, JSON.stringify(data) + "\r\n", options);
+  console.log(
+    chalk.yellowBright(
+      ` [ ${levelName.toUpperCase()} ] Log created at ${fileName}. `
+    )
+  );
 };
 
 /**
@@ -221,6 +264,7 @@ export const readLogAsync = async (options: {
     );
     const lineReader = readline.createInterface(fs.createReadStream(file));
     const logs: {}[] = [];
+    console.log("READSTREAM", typeof lineReader);
     lineReader.on("line", (line) => logs.push(JSON.parse(line)));
     lineReader.on("close", () => {
       console.log(
@@ -246,7 +290,12 @@ const getFormatedDate = () => dayjs(Date.now()).format("YYYY/MM/DD");
  * @returns The Level name if it exists else return "info" as default
  */
 const getLevelName = (levelName: string) => {
-  return levelName && getConfig().levels[levelName] ? levelName : "info";
+  if (levelName && getConfig().levels[levelName]) return levelName;
+  throw new Error(
+    `Given Level: ${chalk.red(
+      levelName
+    )}, was not found in the configuration file. Please use a valid value or add this value to the configuration using " addConfig " function`
+  );
 };
 
 /**
@@ -268,13 +317,51 @@ export const addConfig = (options: {
   color?: string | Array<number>;
   writeToFile?: boolean;
 }) => {
+  if (!options) throw new Error("Options must be defined.");
   if (
     options.level &&
     typeof options.level === "string" &&
     options.level.length > 0
   ) {
-    //TODO ERROR Checking
-    const levelName = options.level as string;
+    //Check rgb
+    if (Array.isArray(options.color)) {
+      //Check if there are 3 values [red,green,blue]
+      if (options.color.length !== 3) {
+        throw makeErrorArrayLengthRGB(options.level, options.color);
+      }
+      //Check for value types of RGB Array
+      if (typeof options.color[0] !== "number")
+        throw makeErrorArrayType(0, typeof options.color[0], options.level);
+      if (typeof options.color[1] !== "number")
+        throw makeErrorArrayType(1, typeof options.color[1], options.level);
+      if (typeof options.color[2] !== "number")
+        throw makeErrorArrayType(2, typeof options.color[2], options.level);
+      //Check values are in range [0,255]
+      if (options.color[0] < 0 || options.color[0] > 255)
+        throw makeErrorRangeValue(0, options.color[0], options.level);
+      if (options.color[1] < 0 || options.color[1] > 255)
+        throw makeErrorRangeValue(1, options.color[1], options.level);
+      if (options.color[2] < 0 || options.color[2] > 255)
+        throw makeErrorRangeValue(2, options.color[2], options.level);
+      //All good
+    }
+
+    //Check hex
+    if (options.color && options.color[0] === "#") {
+      if (!hexRegex.test("" + options.color))
+        throw new Error(
+          `An error has been detected in configuration for level [${chalk.red(
+            options.level.toUpperCase()
+          )}]. The value of color must be a hex value starting with "#". Must be in range [0,9] or A,B,C,D,E,F. The value length must also be "3" or "6". We Found [ ${chalk.red(
+            options.color
+          )} ], Length: ${chalk.red(
+            options.color.length - 1
+          )}. Please use a valid hex value.`
+        );
+      //All Good
+    }
+
+    const levelName = options.level.toLowerCase() as string;
     const level: LevelData = {
       color: options.color ? options.color : "white",
       writeToFile: options.writeToFile === true ? true : false,
