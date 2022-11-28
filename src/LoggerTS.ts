@@ -264,7 +264,6 @@ export const readLogAsync = async (options: {
     );
     const lineReader = readline.createInterface(fs.createReadStream(file));
     const logs: {}[] = [];
-    console.log("READSTREAM", typeof lineReader);
     lineReader.on("line", (line) => logs.push(JSON.parse(line)));
     lineReader.on("close", () => {
       console.log(

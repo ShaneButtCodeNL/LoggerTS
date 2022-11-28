@@ -10,16 +10,12 @@ import {
   fatalLog,
   addConfig,
   removeConfig,
-  readLogAsync,
 } from "./LoggerTS";
-import * as readline from "readline";
-import * as path from "path";
 
 import { config } from "./config";
 const fs = require("fs");
-import { mkdirSync, WriteFileOptions, createReadStream, existsSync } from "fs";
+import { WriteFileOptions } from "fs";
 import chalk from "chalk";
-import { PassThrough } from "stream";
 
 let testNumber = 1;
 const testNumberLength = 2;
