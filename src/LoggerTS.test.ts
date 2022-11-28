@@ -391,4 +391,27 @@ describe(getSuiteName("Test Error states"), () => {
       ).toThrow();
     }
   );
+
+  it(
+    getTestName(
+      "Hex color with 3 values and one out of range should throw error"
+    ),
+    () => {
+      expect(() => addConfig({ level: "#12G", color: "#12G" })).toThrow();
+    }
+  );
+  it(
+    getTestName(
+      "Hex Color with 6 values and one out of range should throw error"
+    ),
+    () => {
+      expect(() => addConfig({ level: "#12345Y", color: "#12345Y" })).toThrow();
+    }
+  );
+  it(
+    getTestName("Hex Color with neither 3 or 6 values should throw error"),
+    () => {
+      expect(() => addConfig({ level: "#12345", color: "#12345" })).toThrow();
+    }
+  );
 });

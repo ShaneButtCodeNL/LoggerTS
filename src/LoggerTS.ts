@@ -8,7 +8,7 @@ import { Level, LevelData } from "./Level";
 
 // used to validate hex values
 // ex #000 #1af #1Af #000000 #123aCf all will be valid
-const hexRegex = /^#([a-f0-9]{6}|[a-f0-9]{3})/i;
+const hexRegex = /^#([a-f0-9]{6}|[a-f0-9]{3})$/i;
 
 /**
  *  Make an error for color defined by an array if 3 values not given like RGB
