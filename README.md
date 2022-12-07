@@ -1,4 +1,4 @@
-# LoggerTS
+# **LoggerTS**
 
 ## This is a simple log writing tool for node. It will make logs to the console and can write logs to log files.
 
@@ -6,7 +6,7 @@
 
 ---
 
-## Installing
+## **Installing**
 
 > ### Locally to play with the code
 >
@@ -24,13 +24,13 @@
 
 ---
 
-## Using this Logger
+## **Using this Logger**
 
 ### Import to your project
 
 - In your program import it with `const logger = require("LoggerTS")` or `import * as logger from "LoggerTS"`
 
-### Use one of the default Log types
+### Use one of the default Log configurations
 
 - LoggerTS has several predefined log types called levels
   1. Debug
@@ -49,6 +49,9 @@
      - Use for logging errors such as unexpected behavior or results.
   8. Fatal
      - Use for Logging errors that cause the program to fail or terminate.
+
+### Add Custom configurations
+
 - You can add custom levels to the logger using the `addConfig` method. The `addConfig` method takes an `options` object in the form of
 
 ```
@@ -60,4 +63,141 @@ addConfig({
 ```
 
 - `level` is the name of the level of the log. `color` is the color value for the console logging and can be a `color` like "white", `hex` like '#123456' or '#123',or a RGB value like [1,2,3]. `writeToFile` is a boolean that tells the the log to be writen to a log file. The `addConfig` function will return a function that will log using this config.
--
+- **`level` must be a defined string with a non-zero length**.
+- If `color` is undefined the program will use default value of White `#FFFFFF`. If `writeToFile` is undefined the program will use a default value of `False`.
+
+### Logging
+
+There are 2 functions to log
+
+#### The general `log` function
+
+Takes an options object as follows
+
+```
+log({
+   level : string,
+   message? : string,
+   JSON? : object,
+   error? : Error,
+   logDir? : string
+})
+```
+
+- `level` defines the log level in the log configurations. If the log level is undefined in the log configurations the program will throw an error.
+- `message` and `JSON` are the data to be logged. If `JSON` is defined the message will be ignored and if `message` is undefined the default of empty string `""` will be used. `JSON` will use the `JSON.stringify` function to turn objects into a readable string that can be parsed with `JSON.parse`.
+- `error` Is an error object used in error logging.
+- `logDir` is the Path where you want to save logs. If `logDir` is undefined it will save logs at the same level as the project under "`./logs`".
+
+#### The specific log functions
+
+Ones for the default configurations
+
+```
+infoLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+debugLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+systemLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+databaseLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+eventLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+warnLog(options:{
+   message?: string;
+   JSON?: any;
+   logDir?: string;
+})
+```
+
+```
+errorLog(options:{
+   message: string|Error;
+   logDir?: string;
+})
+```
+
+```
+fatalLog(options:{
+   message: string|Error;
+   logDir?: string;
+})
+```
+
+Simular functions will be created when you add a custom configuration. This function can stored and called like so . . .
+
+```
+// Add Custom Configuration
+const myCustomLog = addConfig({
+   level: "my-custom-level",
+   color: "#ff12a5",
+   writeToFile:true
+})
+
+// Call the custom log function
+myCustomLog({
+   JSON:{
+      message:"Message",
+      data:[1,2,3,4],
+      moreData:{
+         a:1,
+         b:2
+      }
+      statusOfEconomy:"Looks Bleak"
+   },
+   logDir:"{PATH}/folder-for-logs"
+})
+```
+
+### Read a Log in the console
+
+Use Function . . .
+
+```
+readLogAsync({
+   logDir?:string,
+   fileName:string
+})
+```
+
+- if `logDir` is undefined it will look in the current folder under "`./logs`".
+- The `fileName` is the name of the log. Log files are name as such
+
+```
+ {log-level}-{YYYY}-{MM}-{DD}.log
+ 'log-level' is the string representation of the log level. Ex "debug".
+ 'YYYY' is the numerical year. ex 2022
+ 'MM' is the numerical month. ex 12
+ 'DD' is the numerical day. ex 07
+```
