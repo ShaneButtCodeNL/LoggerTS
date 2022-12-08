@@ -1,5 +1,5 @@
 {
-  "name": "loggerts",
+  "name": "@shane-butt/loggerts",
   "version": "1.0.0",
   "description": "Simple logger tools",
   "main": "lib/LoggerTS.js",

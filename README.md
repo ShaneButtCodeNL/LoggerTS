@@ -19,8 +19,8 @@
 > ### From NPM
 >
 > - This is not on NPM yet. When it is I will update.
-> - ~~Run `npm install loggerts`~~
-> - ~~In your program import it with `const logger = require("LoggerTS")` or `import * as logger from "LoggerTS"`~~
+> - Run `npm install @shane-butt/loggerts`
+> - In your program import it with `const logger = require("@shane-butt/loggerts")` or `import * as logger from "@shane-butt/loggerts"`
 
 ---
 
